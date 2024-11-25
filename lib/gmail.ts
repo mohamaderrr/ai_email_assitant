@@ -1,6 +1,5 @@
 import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
-import { OAuth2Client } from 'google-auth-library';
 
 const oAuth2Client = new google.auth.OAuth2(
   process.env.CLIENT_ID,
@@ -49,7 +48,7 @@ export const getTransporter = async () => {
     service: 'gmail',
     auth: {
       type: 'OAuth2',
-      user: 'your-email@gmail.com', // Replace with your Gmail address
+      user: 'mohameder1412@gmail.com', // Replace with your Gmail address
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
