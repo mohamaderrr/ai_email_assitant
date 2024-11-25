@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Remplacez par votre URL de connexion MySQL
+}
+
+model Email {
+  id          String   @id @default(cuid())
+  subject     String
+  from        String
+  to          String
+  body        String   @db.Text
+  receivedAt  DateTime
+  createdAt   DateTime @default(now())
+  clientId  Int
+  Client    Clients  @relation("ClientEmails", fields: [clientId], references: [id])
+}
+
+model Clients {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  phoneNumber String   @map("phone_number")
+  city        String
+  country     String
+  ownerId     Int      @map("owner_id")
+  status      String
+  createdAt   DateTime @map("created_at")
+  createdBy   Int      @map("created_by")
+  Documents   Documents[]
+  Events      Events[]
+  History     History[]
+  Notes       Notes[]
+  emails      Email[]     @relation("ClientEmails")
+}
+
+model Documents {
+  id        Int      @id @default(autoincrement())
+  type      String
+  clientId  Int      @map("client_id")
+  amount    Int
+  products  String   // Vous pouvez transformer ceci en type Json si nécessaire
+  status    String
+  createdAt DateTime @map("created_at")
+  createdBy Int      @map("created_by")
+
+  Client    Clients  @relation(fields: [clientId], references: [id])
+}
+
+model Events {
+  id          Int      @id @default(autoincrement())
+  clientId    Int      @map("client_id")
+  ownerId     Int      @map("owner_id")
+  name        String
+  description String
+  startingAt  DateTime @map("starting_at")
+  endingAt    DateTime @map("ending_at")
+  createdAt   DateTime @map("created_at")
+  createdBy   Int      @map("created_by")
+
+  Client      Clients  @relation(fields: [clientId], references: [id])
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  clientId  Int      @map("client_id")
+  action    String
+  createdAt DateTime @map("created_at")
+  createdBy Int      @map("created_by")
+
+  Client    Clients  @relation(fields: [clientId], references: [id])
+}
+
+model Notes {
+  id          Int      @id @default(autoincrement())
+  clientId    Int      @map("client_id")
+  description String
+  createdAt   DateTime @map("created_at")
+  createdBy   Int      @map("created_by")
+
+  Client      Clients  @relation(fields: [clientId], references: [id])
+}
+
+model Users {
+  id        BigInt   @id @default(autoincrement())
+  email     String?
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+}
