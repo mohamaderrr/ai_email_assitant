@@ -46,7 +46,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
     setIsSending(true)
     setError('')
     try {
-      const response = await axios.post('/api/send', { to, subject, body })
+      const response = await axios.post('/api/email/send', { to, subject, body })
       onSend({ 
         id: response.data.messageId, 
         from: 'mohameder1412@gmail.com', 
