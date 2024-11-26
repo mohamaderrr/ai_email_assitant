@@ -45,7 +45,7 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
       <ScrollArea className="flex-grow">
         <div className="text-foreground">
           {selectedEmail.preview}
-          <p className="mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam euismod, nisl eget aliquam ultricies, nunc nisl aliquet nunc, vitae aliquam nisl nunc vitae nisl. Sed vitae nisl eget nisl aliquam ultricies. Sed vitae nisl eget nisl aliquam ultricies.</p>
+          <p className="mt-4">.</p>
           <p className="mt-4">Regards,</p>
           <p>{selectedEmail.from}</p>
         </div>
