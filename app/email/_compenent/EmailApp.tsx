@@ -62,14 +62,14 @@ export default function EmailApp() {
 
   const handleSendEmail = (email: Omit<Email, 'id' | 'date' | 'preview' | 'folder'>) => {
     const newEmail = {
-      id: (emails.length + 1).toString(),
+      id: email.id || (emails.length + 1).toString(),
       ...email,
       preview: email.body.substring(0, 100) + '...',
       date: new Date().toLocaleString(),
       folder: 'sent'
     }
-    setEmails([...emails, newEmail])
-    setFilteredEmails([...emails, newEmail])
+    setEmails([newEmail, ...emails])
+    setFilteredEmails([newEmail, ...emails])
     setIsComposing(false)
   }
 
