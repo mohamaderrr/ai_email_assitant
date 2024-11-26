@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Send, X, Wand2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Send, X, Wand2, ChevronLeft, ChevronRight, Cpu } from 'lucide-react'
 import axios from 'axios'
 
 interface Email {
@@ -20,6 +20,8 @@ interface ComposeEmailProps {
   replyTo?: Email;
 }
 
+type Model = 'gemini' | 'llama';
+
 export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmailProps) {
   const [to, setTo] = useState('')
   const [subject, setSubject] = useState('')
@@ -30,6 +32,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
   const abortControllerRef = useRef<AbortController | null>(null)
   const [generatedEmails, setGeneratedEmails] = useState<string[]>([])
   const [currentEmailIndex, setCurrentEmailIndex] = useState(0)
+  const [selectedModel, setSelectedModel] = useState<Model>('gemini')
 
   useEffect(() => {
     if (replyTo) {
@@ -69,7 +72,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
       const response = await fetch('/api/email/respond', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selectedEmailBody: body }),
+        body: JSON.stringify({ selectedEmailBody: body, model: selectedModel }),
         signal: abortControllerRef.current.signal,
       })
 
@@ -120,6 +123,10 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
     if (newIndex >= generatedEmails.length) newIndex = 0
     setCurrentEmailIndex(newIndex)
     setBody(generatedEmails[newIndex])
+  }
+
+  const toggleModel = () => {
+    setSelectedModel(prev => prev === 'gemini' ? 'llama' : 'gemini')
   }
 
   return (
@@ -190,6 +197,14 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
           </Button>
         </div>
         <div className="flex items-center space-x-2">
+          <Button
+            onClick={toggleModel}
+            variant="outline"
+            aria-label={`Switch to ${selectedModel === 'gemini' ? 'Llama' : 'Gemini'} model`}
+          >
+            <Cpu className="mr-2 h-4 w-4" aria-hidden="true" />
+            {selectedModel === 'gemini' ? 'Gemini' : 'Llama'}
+          </Button>
           <Button 
             onClick={isGenerating ? handleCancelGeneration : handleGenerateEmail} 
             variant="outline"

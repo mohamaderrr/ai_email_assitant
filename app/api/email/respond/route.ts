@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOllama } from "@langchain/community/chat_models/ollama";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 
@@ -9,14 +10,25 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
 
   try {
-    const { selectedEmailBody } = await req.json();
+    const { selectedEmailBody, model } = await req.json();
 
-    const model = new ChatGoogleGenerativeAI({
-      modelName: "gemini-pro",
-      maxOutputTokens: 2048,
-      apiKey: process.env.GOOGLE_API_KEY,
-      streaming: true,
-    });
+    let chatModel;
+    if (model === 'gemini') {
+      chatModel = new ChatGoogleGenerativeAI({
+        modelName: "gemini-pro",
+        maxOutputTokens: 2048,
+        apiKey: process.env.GOOGLE_API_KEY,
+        streaming: true,
+      });
+    } else if (model === 'llama') {
+      chatModel = new ChatOllama({
+        baseUrl: "http://localhost:11434", //  Ollama server url
+        model: "llama2",
+        streaming: true,
+      });
+    } else {
+      throw new Error('Invalid model selected');
+    }
 
     const prompt = PromptTemplate.fromTemplate(`
       You are an AI assistant helping to draft an email response. Use the following information to generate a professional and contextually appropriate response:
@@ -27,7 +39,7 @@ export async function POST(req: NextRequest) {
       Please draft a response to this email. The response should be professional, empathetic, and tailored to the specific content of the original email.
     `);
 
-    const chain = prompt.pipe(model).pipe(new StringOutputParser());
+    const chain = prompt.pipe(chatModel).pipe(new StringOutputParser());
 
     const stream = await chain.stream({
       selectedEmailBody: selectedEmailBody,
