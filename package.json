@@ -27,6 +27,7 @@
     "googleapis": "^144.0.0",
     "lucide-react": "^0.460.0",
     "mysql2": "^3.11.4",
+    "natural": "^8.0.1",
     "next": "15.0.3",
     "next-auth": "^4.24.10",
     "nodemailer": "^6.9.16",

@@ -1,8 +1,35 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Reply, Trash2, Users, Send, Sun, Moon } from 'lucide-react'
 
 export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend, onDelete, onToggleTheme, isDarkMode }) {
+  const [sentiment, setSentiment] = useState(null);
+
+  useEffect(() => {
+    if (selectedEmail) {
+      fetchSentiment(selectedEmail.body);
+    }
+  }, [selectedEmail]);
+
+  const fetchSentiment = async (text) => {
+    try {
+      const response = await fetch('/api/email/sentiment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+      const data = await response.json();
+      setSentiment(data.sentiment);
+    } catch (error) {
+      console.error('Error fetching sentiment:', error);
+    }
+  };
+
   if (!selectedEmail) {
     return (
       <div className="flex-1 bg-background p-4 hidden md:flex items-center justify-center text-muted-foreground">
@@ -37,6 +64,15 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </Button>
+          {sentiment && (
+            <div className={`text-sm font-medium ${
+              sentiment === 'positive' ? 'text-green-500' :
+              sentiment === 'negative' ? 'text-red-500' :
+              'text-yellow-500'
+            }`}>
+              Sentiment: {sentiment}
+            </div>
+          )}
           <Button variant="outline" size="sm" onClick={() => onReply(selectedEmail)}>
             <Reply className="mr-2 h-4 w-4" />
             Reply
