@@ -7,7 +7,7 @@ export default function Home() {
   const router = useRouter(); // Initialize the router
 
   const handleGetStarted = () => {
-    router.push("/email"); // Navigate to the /sign route
+    router.push("/signin"); // Navigate to the /sign route
   };
 
   return (
