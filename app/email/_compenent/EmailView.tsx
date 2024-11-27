@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { Reply, Trash2, Users, Send, Sun, Moon } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { Reply, Users, Send, Sun, Moon } from 'lucide-react'
 
-export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend, onDelete, onToggleTheme, isDarkMode }) {
+export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend, onToggleTheme, isDarkMode }) {
   const [sentiment, setSentiment] = useState(null);
 
   useEffect(() => {
@@ -16,7 +17,7 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
 
   const fetchSentiment = async (text) => {
     try {
-      const response = await fetch('/api/email/sentiment', {
+      const response = await fetch('/api/sentiment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,6 +52,19 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
   const emailBodyChunks = splitIntoChunks(selectedEmail.body, 200);
   const subjectChunks = splitIntoChunks(selectedEmail.subject, 7);
 
+  const getSentimentVariant = (sentiment) => {
+    switch (sentiment) {
+      case 'positive':
+        return 'default';
+      case 'negative':
+        return 'destructive';
+      case 'neutral':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
   return (
     <div className="flex-1 bg-background p-4 flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-start mb-4">
@@ -59,19 +73,11 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
             <h2 key={index} className="text-2xl font-semibold mb-1">{chunk}</h2>
           ))}
         </div>
-        <div className="space-x-2 flex flex-wrap justify-end">
-          <Button variant="outline" size="sm" onClick={() => onDelete(selectedEmail.id)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
+        <div className="space-x-2 flex flex-wrap justify-end items-center">
           {sentiment && (
-            <div className={`text-sm font-medium ${
-              sentiment === 'positive' ? 'text-green-500' :
-              sentiment === 'negative' ? 'text-red-500' :
-              'text-yellow-500'
-            }`}>
-              Sentiment: {sentiment}
-            </div>
+            <Badge variant={getSentimentVariant(sentiment)} className="capitalize">
+              {sentiment}
+            </Badge>
           )}
           <Button variant="outline" size="sm" onClick={() => onReply(selectedEmail)}>
             <Reply className="mr-2 h-4 w-4" />
