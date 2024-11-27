@@ -60,17 +60,50 @@ export default function EmailApp() {
     }
   }
 
-  const handleSendEmail = (email: Omit<Email, 'id' | 'date' | 'preview' | 'folder'>) => {
-    const newEmail = {
-      id: email.id || (emails.length + 1).toString(),
-      ...email,
-      preview: email.body.substring(0, 100) + '...',
-      date: new Date().toLocaleString(),
-      folder: 'sent'
+  const fetchSentEmails = async () => {
+    try {
+      setIsLoading(true)
+      const response = await axios.get('/api/email/sent-emails')
+      const fetchedSentEmails = response.data.emails.map((email: any, index: number) => ({
+        id: `sent_${index + 1}`,
+        from: email.from,
+        to: email.to,
+        subject: email.subject,
+        preview: email.snippet || '',
+        date: new Date(email.date).toLocaleString(),
+        body: email.snippet || '', // We don't have full body in sent emails API
+        folder: 'sent'
+      }))
+      setEmails(prevEmails => [...prevEmails, ...fetchedSentEmails])
+      setFilteredEmails(prevEmails => [...prevEmails, ...fetchedSentEmails])
+    } catch (err) {
+      setError('Failed to fetch sent emails. Please try again later.')
+      console.error('Error fetching sent emails:', err)
+    } finally {
+      setIsLoading(false)
     }
-    setEmails([newEmail, ...emails])
-    setFilteredEmails([newEmail, ...emails])
-    setIsComposing(false)
+  }
+
+  const handleSendEmail = async (email: Omit<Email, 'id' | 'date' | 'preview' | 'folder'>) => {
+    try {
+      setIsLoading(true)
+      const response = await axios.post('/api/email/send', email)
+      const newEmail = {
+        id: `sent_${emails.length + 1}`,
+        ...email,
+        preview: email.body.substring(0, 100) + '...',
+        date: new Date().toLocaleString(),
+        folder: 'sent'
+      }
+      setEmails(prevEmails => [newEmail, ...prevEmails])
+      setFilteredEmails(prevEmails => [newEmail, ...prevEmails])
+      setIsComposing(false)
+    } catch (err) {
+      setError('Failed to send email. Please try again later.')
+      console.error('Error sending email:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDeleteEmail = (emailToDelete: Email) => {
@@ -93,7 +126,7 @@ export default function EmailApp() {
   const handleResend = (email: Email) => {
     const resendEmail = {
       ...email,
-      id: (emails.length + 1).toString(),
+      id: `sent_${emails.length + 1}`,
       date: new Date().toLocaleString(),
     }
     setEmails([...emails, resendEmail])
@@ -113,6 +146,13 @@ export default function EmailApp() {
     setIsDarkMode(!isDarkMode)
   }
 
+  const handleSelectFolder = (folder: string) => {
+    setSelectedFolder(folder)
+    if (folder === 'sent' && !emails.some(email => email.folder === 'sent')) {
+      fetchSentEmails()
+    }
+  }
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
@@ -125,7 +165,7 @@ export default function EmailApp() {
     <div className="flex h-screen w-full bg-background">
       <Sidebar 
         selectedFolder={selectedFolder} 
-        onSelectFolder={setSelectedFolder}
+        onSelectFolder={handleSelectFolder}
         onCompose={() => setIsComposing(true)}
       />
       <div className="flex flex-1 flex-col md:flex-row">

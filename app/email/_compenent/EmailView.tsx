@@ -11,28 +11,45 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
     )
   }
 
+  // Function to split text into chunks
+  const splitIntoChunks = (text: string, chunkSize: number) => {
+    const words = text.split(' ');
+    const chunks = [];
+    for (let i = 0; i < words.length; i += chunkSize) {
+      chunks.push(words.slice(i, i + chunkSize).join(' '));
+    }
+    return chunks;
+  };
+
+  const emailBodyChunks = splitIntoChunks(selectedEmail.body, 200);
+  const subjectChunks = splitIntoChunks(selectedEmail.subject, 7);
+
   return (
-    <div className="flex-1 bg-background p-4 flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">{selectedEmail.subject}</h2>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={() => onDelete(selectedEmail.id)}>
+    <div className="flex-1 bg-background p-4 flex flex-col h-full overflow-hidden">
+      <div className="flex justify-between items-start mb-4">
+        <div className="max-w-[50%]">
+          {subjectChunks.map((chunk, index) => (
+            <h2 key={index} className="text-2xl font-semibold mb-1">{chunk}</h2>
+          ))}
+        </div>
+        <div className="space-x-2 flex flex-wrap justify-end">
+          <Button variant="outline" size="sm" onClick={() => onDelete(selectedEmail.id)}>
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </Button>
-          <Button variant="outline" onClick={() => onReply(selectedEmail)}>
+          <Button variant="outline" size="sm" onClick={() => onReply(selectedEmail)}>
             <Reply className="mr-2 h-4 w-4" />
             Reply
           </Button>
-          <Button variant="outline" onClick={() => onReplyAll(selectedEmail)}>
+          <Button variant="outline" size="sm" onClick={() => onReplyAll(selectedEmail)}>
             <Users className="mr-2 h-4 w-4" />
             Reply All
           </Button>
-          <Button variant="outline" onClick={() => onResend(selectedEmail)}>
+          <Button variant="outline" size="sm" onClick={() => onResend(selectedEmail)}>
             <Send className="mr-2 h-4 w-4" />
             Resend
           </Button>
-          <Button variant="outline" onClick={onToggleTheme}>
+          <Button variant="outline" size="sm" onClick={onToggleTheme}>
             {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
@@ -43,11 +60,10 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
         <span className="ml-4">{selectedEmail.date}</span>
       </div>
       <ScrollArea className="flex-grow">
-        <div className="text-foreground">
-          {selectedEmail.preview}
-          <p className="mt-4">.</p>
-          <p className="mt-4">Regards,</p>
-          <p>{selectedEmail.from}</p>
+        <div className="text-foreground text-sm leading-relaxed">
+          {emailBodyChunks.map((chunk, index) => (
+            <p key={index} className="mb-4 max-w-[66ch] break-words">{chunk}</p>
+          ))}
         </div>
       </ScrollArea>
     </div>

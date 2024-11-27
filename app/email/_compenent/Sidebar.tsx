@@ -1,16 +1,18 @@
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Inbox, Send, File, Trash, Star, PenSquare } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { PenSquare } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const folders = [
-  { name: 'Inbox', icon: Inbox },
-  { name: 'Sent', icon: Send },
-  { name: 'Drafts', icon: File },
-  { name: 'Trash', icon: Trash },
-  { name: 'Starred', icon: Star },
-]
+  { name: "Inbox", icon: PenSquare },
+  { name: "Sent", icon: PenSquare },
+  { name: "Draft", icon: PenSquare },
+];
 
-export default function Sidebar({ selectedFolder, onSelectFolder, onCompose }) {
+export default function Sidebar({ selectedFolder, onSelectFolder, onCompose }: {
+  selectedFolder: string;
+  onSelectFolder: (folder: string) => void;
+  onCompose: () => void;
+}) {
   return (
     <div className="w-64 bg-secondary text-secondary-foreground p-4 hidden md:block">
       <Button className="w-full mb-4" variant="default" onClick={onCompose}>
