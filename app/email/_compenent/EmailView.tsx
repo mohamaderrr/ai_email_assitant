@@ -5,17 +5,41 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Reply, Users, Send, Sun, Moon } from 'lucide-react'
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend, onToggleTheme, isDarkMode }) {
-  const [sentiment, setSentiment] = useState(null);
+interface Email {
+  id: string
+  subject: string
+  from: string
+  to: string
+  date: string
+  body: string
+}
+
+interface EmailViewProps {
+  selectedEmail: Email | null
+  onReply: (email: Email) => void
+  onReplyAll: (email: Email) => void
+  onResend: (email: Email) => void
+  onToggleTheme: () => void
+  isDarkMode: boolean
+}
+
+export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend, onToggleTheme, isDarkMode }: EmailViewProps) {
+  const [sentiment, setSentiment] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (selectedEmail) {
-      fetchSentiment(selectedEmail.body);
+      setSentiment(null)
+      setError(null)
+      fetchSentiment(selectedEmail.body)
     }
-  }, [selectedEmail]);
+  }, [selectedEmail])
 
-  const fetchSentiment = async (text) => {
+  const fetchSentiment = async (text: string) => {
+    setIsLoading(true)
     try {
       const response = await fetch('/api/sentiment', {
         method: 'POST',
@@ -23,13 +47,19 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ text }),
-      });
-      const data = await response.json();
-      setSentiment(data.sentiment);
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch sentiment')
+      }
+      const data = await response.json()
+      setSentiment(data.sentiment)
     } catch (error) {
-      console.error('Error fetching sentiment:', error);
+      console.error('Error fetching sentiment:', error)
+      setError('Failed to analyze sentiment')
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
 
   if (!selectedEmail) {
     return (
@@ -39,31 +69,30 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
     )
   }
 
-  // Function to split text into chunks
   const splitIntoChunks = (text: string, chunkSize: number) => {
-    const words = text.split(' ');
-    const chunks = [];
+    const words = text.split(' ')
+    const chunks = []
     for (let i = 0; i < words.length; i += chunkSize) {
-      chunks.push(words.slice(i, i + chunkSize).join(' '));
+      chunks.push(words.slice(i, i + chunkSize).join(' '))
     }
-    return chunks;
-  };
+    return chunks
+  }
 
-  const emailBodyChunks = splitIntoChunks(selectedEmail.body, 200);
-  const subjectChunks = splitIntoChunks(selectedEmail.subject, 7);
+  const emailBodyChunks = splitIntoChunks(selectedEmail.body, 200)
+  const subjectChunks = splitIntoChunks(selectedEmail.subject, 7)
 
-  const getSentimentVariant = (sentiment) => {
+  const getSentimentVariant = (sentiment: string | null) => {
     switch (sentiment) {
       case 'positive':
-        return 'default';
+        return 'default'
       case 'negative':
-        return 'destructive';
+        return 'destructive'
       case 'neutral':
-        return 'secondary';
+        return 'secondary'
       default:
-        return 'outline';
+        return 'outline'
     }
-  };
+  }
 
   return (
     <div className="flex-1 bg-background p-4 flex flex-col h-full overflow-hidden">
@@ -74,11 +103,17 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
           ))}
         </div>
         <div className="space-x-2 flex flex-wrap justify-end items-center">
-          {sentiment && (
+          {isLoading ? (
+            <Skeleton className="h-6 w-20" />
+          ) : error ? (
+            <Badge variant="outline" className="capitalize">
+              Error
+            </Badge>
+          ) : sentiment ? (
             <Badge variant={getSentimentVariant(sentiment)} className="capitalize">
               {sentiment}
             </Badge>
-          )}
+          ) : null}
           <Button variant="outline" size="sm" onClick={() => onReply(selectedEmail)}>
             <Reply className="mr-2 h-4 w-4" />
             Reply
