@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     } else if (model === 'llama') {
       chatModel = new ChatOllama({
         baseUrl: "http://localhost:11434", //  Ollama server url
-        model: "phi",
+        model: "llama3.1",
         streaming: true,
       });
     } else {
