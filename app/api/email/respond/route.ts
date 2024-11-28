@@ -5,9 +5,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 // Must precede any llm module imports
 
-import * as Langtrace from '@langtrace/typescript-sdk'
 
-Langtrace.init({ api_key: '65552fe56cd7374810e5f16c7b3fee1bb7ce9bf3141ed44b896d3f65fac0784c' })
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {

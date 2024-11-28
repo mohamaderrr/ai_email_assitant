@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Google AI client
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+const genAI = new GoogleGenerativeAI({ apiKey: process.env.GOOGLE_API_KEY });
 
 export async function POST(request: Request) {
   try {
@@ -12,9 +12,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    // Initialize the model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
     // Prepare the prompt
     const prompt = `Analyze the sentiment of the following text and respond with only one word: 'positive', 'negative', or 'neutral'. Do not include any other text in your response.
 
@@ -22,10 +19,13 @@ Text: "${text}"
 
 Sentiment:`;
 
-    // Generate content
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const sentiment = response.text().trim().toLowerCase();
+    // Generate content using the generative model
+    const response = await genAI.generateText({
+      model: "models/gemini-pro",
+      prompt,
+    });
+
+    const sentiment = response.text?.trim().toLowerCase();
 
     // Validate the response
     if (!['positive', 'negative', 'neutral'].includes(sentiment)) {
@@ -38,4 +38,3 @@ Sentiment:`;
     return NextResponse.json({ error: 'Error processing sentiment analysis' }, { status: 500 });
   }
 }
-
