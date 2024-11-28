@@ -1,6 +1,6 @@
 import React from 'react'
 import EmailApp from './_compenent/EmailApp'
-import MainNav from './_compenent/Navbar'
+import MainNav from '../_component/Navbar'
 function page() {
   return ( <div>
      <MainNav/>
