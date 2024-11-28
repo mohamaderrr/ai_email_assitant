@@ -22,7 +22,7 @@ export default function EmailApp() {
   const [selectedFolder, setSelectedFolder] = useState('inbox')
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
   const [isComposing, setIsComposing] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true)
   const [emails, setEmails] = useState<Email[]>([])
   const [filteredEmails, setFilteredEmails] = useState<Email[]>([])
   const [isLoading, setIsLoading] = useState(true)
