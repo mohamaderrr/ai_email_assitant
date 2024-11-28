@@ -81,8 +81,7 @@ CREATE TABLE `Notes` (
 
 -- CreateTable
 CREATE TABLE `Users` (
-    `id` npx prisma migrate dev --name update email\
-BIGINT NOT NULL AUTO_INCREMENT,
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NULL,
     `name` VARCHAR(191) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

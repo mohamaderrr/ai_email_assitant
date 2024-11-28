@@ -24,8 +24,8 @@ model Email {
   body        String   @db.Text
   receivedAt  DateTime
   createdAt   DateTime @default(now())
-  clientId  Int
-  Client    Clients  @relation("ClientEmails", fields: [clientId], references: [id])
+  clientId    Int
+  Client      Clients  @relation("ClientEmails", fields: [clientId], references: [id])
 }
 
 model Clients {
