@@ -32,7 +32,7 @@ export const getEmails = async () => {
     // List messages from Gmail
     const { data } = await gmail.users.messages.list({
       userId: 'me',
-      maxResults: 20, // Adjust the number of emails to fetch
+      maxResults: 1, // Adjust the number of emails to fetch
     });
 
     if (!data.messages || data.messages.length === 0) {
