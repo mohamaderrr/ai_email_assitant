@@ -1,43 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getEmails } from '@/lib/gmail';
-import prisma from '@/lib/prisma';
+import { insertEmailsToDatabase } from '@/lib/insertEmailsToDatabase';
 
-async function insertEmailsToDatabase(emails: any[], clientId: number) {
-  const emailPromises = emails.map(async (email) => {
-    try {
-      return await prisma.email.create({
-        data: {
-          subject: email.subject,
-          from: email.from,
-          to: email.to,
-          body: email.body,
-          receivedAt: new Date(email.date),
-          clientId: clientId,
-        },
-      });
-    } catch (error) {
-      console.error('Error inserting email:', error);
-      throw error;
-    }
-  });
-
-  return Promise.all(emailPromises);
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const clientId = parseInt(searchParams.get('clientId') || '0', 10);
+
     const { emails } = await getEmails();
     
-    // Note: Replace this with actual client ID logic based on your requirements
-    const clientId = 1; // Example client ID
-    
     // Insert emails into the database
-    await insertEmailsToDatabase(emails, clientId);
+    const insertedEmails = await insertEmailsToDatabase(emails, clientId);
 
     return NextResponse.json({ 
       success: true,
-      message: `Successfully fetched and stored ${emails.length} emails`,
-      emails 
+      message: `Successfully fetched and stored ${insertedEmails.length} emails`,
+      emails: insertedEmails
     });
   } catch (error) {
     console.error('Error in API route:', error);
@@ -47,5 +25,4 @@ export async function GET() {
     );
   }
 }
-
 
