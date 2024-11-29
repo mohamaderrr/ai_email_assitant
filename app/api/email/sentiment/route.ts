@@ -1,10 +1,21 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize the Google AI client
-const genAI = new GoogleGenerativeAI({ apiKey: process.env.GOOGLE_API_KEY });
+// Check if the API key is defined
+const apiKey = process.env.GOOGLE_API_KEY;
 
-export async function POST(request: Request) {
+if (!apiKey) {
+  throw new Error('GOOGLE_API_KEY is not defined in the environment variables');
+}
+
+// Initialize the Google AI client with the API key as a string
+const genAI = new GoogleGenerativeAI(apiKey);
+
+export async function GET() {
+  return NextResponse.json({ message: "Sentiment analysis API is running" });
+}
+
+export async function POST(request: NextRequest) {
   try {
     const { text } = await request.json();
 
@@ -20,12 +31,10 @@ Text: "${text}"
 Sentiment:`;
 
     // Generate content using the generative model
-    const response = await genAI.generateText({
-      model: "models/gemini-pro",
-      prompt,
-    });
-
-    const sentiment = response.text?.trim().toLowerCase();
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const sentiment = response.text().trim().toLowerCase();
 
     // Validate the response
     if (!['positive', 'negative', 'neutral'].includes(sentiment)) {
@@ -38,3 +47,4 @@ Sentiment:`;
     return NextResponse.json({ error: 'Error processing sentiment analysis' }, { status: 500 });
   }
 }
+
