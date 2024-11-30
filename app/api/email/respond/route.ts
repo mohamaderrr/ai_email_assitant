@@ -3,8 +3,9 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOllama } from "@langchain/ollama";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-// Must precede any llm module imports
+import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
 
 export const runtime = 'edge';
 
@@ -12,7 +13,24 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
 
   try {
-    const { selectedEmailBody, model } = await req.json();
+    const { selectedEmailBody, model, fromEmail } = await req.json();
+
+    // Find the client based on the email address
+    const client = await prisma.clients.findFirst({
+      where: {
+        email: fromEmail
+      },
+      include: {
+        Documents: true,
+        Events: true,
+        History: true,
+        Notes: true
+      }
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
 
     let chatModel;
     if (model === 'gemini') {
@@ -38,13 +56,52 @@ export async function POST(req: NextRequest) {
       Original Email Body:
       {selectedEmailBody}
 
-      Please draft a response to this email. The response should be professional, empathetic, and tailored to the specific content of the original email.
+      Client Information:
+      Name: {clientName}
+      Email: {clientEmail}
+      Phone: {clientPhone}
+      City: {clientCity}
+      Country: {clientCountry}
+      Status: {clientStatus}
+
+      Recent Documents:
+      {recentDocuments}
+
+      Upcoming Events:
+      {upcomingEvents}
+
+      Recent Notes:
+      {recentNotes}
+
+      Please draft a response to this email. The response should be professional, empathetic, and tailored to the specific content of the original email and the client's information provided above. Use the client's information to personalize the response and address any relevant recent activities or upcoming events if applicable.
     `);
+
+    const recentDocuments = client.Documents.slice(0, 3).map(doc => 
+      `Type: ${doc.type}, Amount: ${doc.amount}, Status: ${doc.status}`
+    ).join('\n');
+
+    const upcomingEvents = client.Events.filter(event => new Date(event.startingAt) > new Date())
+      .slice(0, 3).map(event => 
+        `Name: ${event.name}, Date: ${event.startingAt.toLocaleDateString()}`
+      ).join('\n');
+
+    const recentNotes = client.Notes.slice(0, 3).map(note => 
+      `${note.description} (${note.createdAt.toLocaleDateString()})`
+    ).join('\n');
 
     const chain = prompt.pipe(chatModel).pipe(new StringOutputParser());
 
     const stream = await chain.stream({
       selectedEmailBody: selectedEmailBody,
+      clientName: client.name,
+      clientEmail: client.email,
+      clientPhone: client.phoneNumber,
+      clientCity: client.city,
+      clientCountry: client.country,
+      clientStatus: client.status,
+      recentDocuments: recentDocuments || 'No recent documents',
+      upcomingEvents: upcomingEvents || 'No upcoming events',
+      recentNotes: recentNotes || 'No recent notes'
     });
 
     return new Response(
