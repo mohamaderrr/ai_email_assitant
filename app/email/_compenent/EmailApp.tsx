@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import Sidebar from './Sidebar'
 import EmailList from './EmailList'
@@ -27,6 +27,8 @@ export default function EmailApp() {
   const [filteredEmails, setFilteredEmails] = useState<Email[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     fetchEmails()
@@ -39,19 +41,21 @@ export default function EmailApp() {
   const fetchEmails = async () => {
     try {
       setIsLoading(true)
-      const response = await axios.get('/api/email/fetch')
+      const response = await axios.get(`/api/email/fetch?page=${page}&limit=20`)
       const fetchedEmails = response.data.emails.map((email: any, index: number) => ({
-        id: index + 1,
+        id: `${page}_${index + 1}`,
         from: email.from,
         to: email.to,
         subject: email.subject,
         preview: email.body.substring(0, 100) + '...',
         date: new Date(email.date).toLocaleString(),
         body: email.body,
-        folder: 'inbox' // Assuming all fetched emails are in the inbox
+        folder: 'inbox'
       }))
-      setEmails(fetchedEmails)
-      setFilteredEmails(fetchedEmails)
+      setEmails(prevEmails => [...prevEmails, ...fetchedEmails])
+      setFilteredEmails(prevEmails => [...prevEmails, ...fetchedEmails])
+      setPage(prevPage => prevPage + 1)
+      setHasMore(fetchedEmails.length === 20)
     } catch (err) {
       setError('Failed to fetch emails. Please try again later.')
       console.error('Error fetching emails:', err)
@@ -71,7 +75,7 @@ export default function EmailApp() {
         subject: email.subject,
         preview: email.snippet || '',
         date: new Date(email.date).toLocaleString(),
-        body: email.snippet || '', // We don't have full body in sent emails API
+        body: email.snippet || '',
         folder: 'sent'
       }))
       setEmails(prevEmails => [...prevEmails, ...fetchedSentEmails])
@@ -153,9 +157,11 @@ export default function EmailApp() {
     }
   }
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>
-  }
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      fetchEmails()
+    }
+  }, [isLoading, hasMore])
 
   if (error) {
     return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>
@@ -173,6 +179,9 @@ export default function EmailApp() {
           emails={filteredEmails.filter(email => email.folder === selectedFolder)} 
           onSelectEmail={setSelectedEmail}
           onSearch={handleSearch}
+          onLoadMore={handleLoadMore}
+          isLoading={isLoading}
+          hasMore={hasMore}
         />
         {isComposing ? (
           <ComposeEmail 

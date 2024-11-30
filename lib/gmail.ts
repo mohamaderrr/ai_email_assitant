@@ -25,18 +25,21 @@ export const getGmailService = async () => {
   }
 };
 
-export const getEmails = async () => {
+export const getEmails = async (page: number = 1, limit: number = 20, folder: string = 'INBOX') => {
   try {
     const gmail = await getGmailService();
+    const pageToken = page === 1 ? undefined : await getPageToken(page, limit, folder);
 
     // List messages from Gmail
     const { data } = await gmail.users.messages.list({
       userId: 'me',
-      maxResults: 20, // Adjust the number of emails to fetch
+      maxResults: limit,
+      pageToken: pageToken,
+      labelIds: [folder],
     });
 
     if (!data.messages || data.messages.length === 0) {
-      return { emails: [] };
+      return { emails: [], nextPageToken: null };
     }
 
     // Fetch detailed data for each message
@@ -62,6 +65,7 @@ export const getEmails = async () => {
           : 'No Body';
 
         return {
+          id: message.id,
           from,
           to: 'me', // Assuming "me" as the recipient
           date,
@@ -71,11 +75,46 @@ export const getEmails = async () => {
       })
     );
 
-    return { emails: emailDetails };
+    return { emails: emailDetails, nextPageToken: data.nextPageToken || null };
   } catch (error: any) {
     console.error('Error fetching emails:', error);
     throw new Error(`Failed to fetch emails: ${error.message}`);
   }
+};
+
+export const getTotalEmailCount = async (folder: string = 'INBOX') => {
+  try {
+    const gmail = await getGmailService();
+    const { data } = await gmail.users.labels.get({
+      userId: 'me',
+      id: folder,
+    });
+    return data.messagesTotal || 0;
+  } catch (error: any) {
+    console.error('Error fetching total email count:', error);
+    throw new Error(`Failed to fetch total email count: ${error.message}`);
+  }
+};
+
+const getPageToken = async (page: number, limit: number, folder: string) => {
+  const gmail = await getGmailService();
+  let currentPage = 1;
+  let pageToken: string | undefined = undefined;
+
+  while (currentPage < page) {
+    const { data } = await gmail.users.messages.list({
+      userId: 'me',
+      maxResults: limit,
+      pageToken: pageToken,
+      labelIds: [folder],
+    });
+    pageToken = data.nextPageToken;
+    currentPage++;
+
+    if (!pageToken) break;
+  }
+
+  return pageToken;
 };
 
 export const verifyCredentials = async () => {
