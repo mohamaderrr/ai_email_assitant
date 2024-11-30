@@ -1,21 +1,35 @@
-// Import necessary modules
 "use client"
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation"; // Correct import for App Router
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
+  const fullText = "Generates automatically contextual responses to client emails";
+  const words = fullText.split(" ");
+  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (displayedWords.length < words.length) {
+      const timer = setTimeout(() => {
+        setDisplayedWords(prevWords => [...prevWords, words[prevWords.length]]);
+      }, 200); // Adjust this value to change the speed of word appearance
+
+      return () => clearTimeout(timer);
+    }
+  }, [displayedWords, words]);
 
   const handleGetStarted = () => {
-    router.push("/signin"); // Navigate to the /sign route
+    router.push("/signin");
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black text-white">
-      <div className="text-center space-y-8">
-        {/* Heading */}
-        <h1 className="text-4xl font-bold">
-        Generates automatically  contextual responses to client emails 
+      <div className="text-center space-y-6">
+        {/* Dynamic Heading */}
+        <h1 className="text-4xl font-bold h-24 sm:h-16">
+          {displayedWords.join(" ")}
         </h1>
 
         {/* Buttons */}
@@ -23,7 +37,7 @@ export default function Home() {
           <Button 
             variant="primary" 
             className="px-6 py-2" 
-            onClick={handleGetStarted} // Add onClick handler
+            onClick={handleGetStarted}
           >
             Get Started
           </Button>
@@ -34,7 +48,13 @@ export default function Home() {
             Watch a Demo
           </Button>
         </div>
+
+        {/* Developed by text - now below buttons with bold font */}
+        <div className="text-green-500 text-sm font-bold">
+          Developed by mamane.tech
+        </div>
       </div>
     </div>
   );
 }
+
