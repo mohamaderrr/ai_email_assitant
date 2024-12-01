@@ -14,37 +14,38 @@ export default function AuthPage() {
   const router = useRouter()
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, action: 'signin' | 'signup') => {
-    event.preventDefault()
-    setIsLoading(true)
-
-    const formData = new FormData(event.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-
+    event.preventDefault();
+    setIsLoading(true);
+  
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+  
     try {
       const response = await fetch(`/api/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      })
-
+      });
+  
+      const data = await response.json();
+  
       if (response.ok) {
         if (action === 'signin') {
-          router.push('/email')
+          router.push('/email');
         } else {
-          alert('Sign up successful! Please sign in.')
+          alert('Sign up successful! Please sign in.');
         }
       } else {
-        const data = await response.json()
-        alert(data.error || `Error during ${action}`)
+        alert(data.error || `Error during ${action}`);
       }
     } catch (error) {
-      alert(`An error occurred during ${action}`)
+      alert(`An error occurred during ${action}`);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
+  
   return (
     <div className="flex min-h-screen">
       <div className="hidden lg:block lg:w-1/2 relative">

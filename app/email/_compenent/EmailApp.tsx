@@ -1,49 +1,47 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import axios from 'axios'
-import Sidebar from './Sidebar'
-import EmailList from './EmailList'
-import EmailView from './EmailView'
-import ComposeEmail from './ComposeEmail'
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import Sidebar from './Sidebar';
+import EmailList from './EmailList';
+import EmailView from './EmailView';
+import ComposeEmail from './ComposeEmail';
 
 interface Email {
-  id: string
-  from: string
-  to: string
-  subject: string
-  preview: string
-  date: string
-  body: string
-  folder: string
+  id: string;
+  from: string;
+  to: string;
+  subject: string;
+  preview: string;
+  date: string;
+  body: string;
+  folder: string;
 }
 
 export default function EmailApp() {
-  const [selectedFolder, setSelectedFolder] = useState('inbox')
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
-  const [selectedEmail, setSelectedEmail] = useState<Email>({ /* default Email object */ });
-
-  const [isComposing, setIsComposing] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true)
-  const [emails, setEmails] = useState<Email[]>([])
-  const [filteredEmails, setFilteredEmails] = useState<Email[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
+  const [selectedFolder, setSelectedFolder] = useState('inbox');
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null); // Allow null
+  const [isComposing, setIsComposing] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [emails, setEmails] = useState<Email[]>([]);
+  const [filteredEmails, setFilteredEmails] = useState<Email[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    fetchEmails()
-  }, [])
+    fetchEmails();
+  }, []);
 
   useEffect(() => {
-    document.body.classList.toggle('dark', isDarkMode)
-  }, [isDarkMode])
+    document.body.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
 
   const fetchEmails = async () => {
     try {
-      setIsLoading(true)
-      const response = await axios.get(`/api/email/fetch?page=${page}&limit=20`)
+      setIsLoading(true);
+      const response = await axios.get(`/api/email/fetch?page=${page}&limit=20`);
       const fetchedEmails = response.data.emails.map((email: any, index: number) => ({
         id: `${page}_${index + 1}`,
         from: email.from,
@@ -52,24 +50,24 @@ export default function EmailApp() {
         preview: email.body.substring(0, 100) + '...',
         date: new Date(email.date).toLocaleString(),
         body: email.body,
-        folder: 'inbox'
-      }))
-      setEmails(prevEmails => [...prevEmails, ...fetchedEmails])
-      setFilteredEmails(prevEmails => [...prevEmails, ...fetchedEmails])
-      setPage(prevPage => prevPage + 1)
-      setHasMore(fetchedEmails.length === 20)
+        folder: 'inbox',
+      }));
+      setEmails((prevEmails) => [...prevEmails, ...fetchedEmails]);
+      setFilteredEmails((prevEmails) => [...prevEmails, ...fetchedEmails]);
+      setPage((prevPage) => prevPage + 1);
+      setHasMore(fetchedEmails.length === 20);
     } catch (err) {
-      setError('Failed to fetch emails. Please try again later.')
-      console.error('Error fetching emails:', err)
+      setError('Failed to fetch emails. Please try again later.');
+      console.error('Error fetching emails:', err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const fetchSentEmails = async () => {
     try {
-      setIsLoading(true)
-      const response = await axios.get('/api/email/sent-emails')
+      setIsLoading(true);
+      const response = await axios.get('/api/email/sent-emails');
       const fetchedSentEmails = response.data.emails.map((email: any, index: number) => ({
         id: `sent_${index + 1}`,
         from: email.from,
@@ -78,95 +76,96 @@ export default function EmailApp() {
         preview: email.snippet || '',
         date: new Date(email.date).toLocaleString(),
         body: email.snippet || '',
-        folder: 'sent'
-      }))
-      setEmails(prevEmails => [...prevEmails, ...fetchedSentEmails])
-      setFilteredEmails(prevEmails => [...prevEmails, ...fetchedSentEmails])
+        folder: 'sent',
+      }));
+      setEmails((prevEmails) => [...prevEmails, ...fetchedSentEmails]);
+      setFilteredEmails((prevEmails) => [...prevEmails, ...fetchedSentEmails]);
     } catch (err) {
-      setError('Failed to fetch sent emails. Please try again later.')
-      console.error('Error fetching sent emails:', err)
+      setError('Failed to fetch sent emails. Please try again later.');
+      console.error('Error fetching sent emails:', err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSendEmail = async (email: Omit<Email, 'id' | 'date' | 'preview' | 'folder'>) => {
     try {
-      setIsLoading(true)
-      const response = await axios.post('/api/email/send', email)
+      setIsLoading(true);
+      const response = await axios.post('/api/email/send', email);
       const newEmail = {
         id: `sent_${emails.length + 1}`,
         ...email,
         preview: email.body.substring(0, 100) + '...',
         date: new Date().toLocaleString(),
-        folder: 'sent'
-      }
-      setEmails(prevEmails => [newEmail, ...prevEmails])
-      setFilteredEmails(prevEmails => [newEmail, ...prevEmails])
-      setIsComposing(false)
+        folder: 'sent',
+      };
+      setEmails((prevEmails) => [newEmail, ...prevEmails]);
+      setFilteredEmails((prevEmails) => [newEmail, ...prevEmails]);
+      setIsComposing(false);
     } catch (err) {
-      setError('Failed to send email. Please try again later.')
-      console.error('Error sending email:', err)
+      setError('Failed to send email. Please try again later.');
+      console.error('Error sending email:', err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteEmail = (emailToDelete: Email) => {
-    const updatedEmails = emails.filter(email => email.id !== emailToDelete.id)
-    setEmails(updatedEmails)
-    setFilteredEmails(updatedEmails)
-    setSelectedEmail(null)
-  }
+    const updatedEmails = emails.filter((email) => email.id !== emailToDelete.id);
+    setEmails(updatedEmails);
+    setFilteredEmails(updatedEmails);
+    setSelectedEmail(null); // Reset to null
+  };
 
   const handleReply = (email: Email) => {
-    setIsComposing(true)
-    setSelectedEmail(email)
-  }
+    setIsComposing(true);
+    setSelectedEmail(email);
+  };
 
   const handleReplyAll = (email: Email) => {
-    setIsComposing(true)
-    setSelectedEmail({ ...email, to: `${email.from}, ${email.to}` })
-  }
+    setIsComposing(true);
+    setSelectedEmail({ ...email, to: `${email.from}, ${email.to}` });
+  };
 
   const handleResend = (email: Email) => {
     const resendEmail = {
       ...email,
       id: `sent_${emails.length + 1}`,
       date: new Date().toLocaleString(),
-    }
-    setEmails([...emails, resendEmail])
-    setFilteredEmails([...emails, resendEmail])
-  }
+    };
+    setEmails([...emails, resendEmail]);
+    setFilteredEmails([...emails, resendEmail]);
+  };
 
   const handleSearch = (searchTerm: string) => {
-    const filtered = emails.filter(email => 
-      email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      email.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      email.body.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredEmails(filtered)
-  }
+    const filtered = emails.filter(
+      (email) =>
+        email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        email.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        email.body.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredEmails(filtered);
+  };
 
   const handleToggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
+    setIsDarkMode(!isDarkMode);
+  };
 
   const handleSelectFolder = (folder: string) => {
-    setSelectedFolder(folder)
-    if (folder === 'sent' && !emails.some(email => email.folder === 'sent')) {
-      fetchSentEmails()
+    setSelectedFolder(folder);
+    if (folder === 'sent' && !emails.some((email) => email.folder === 'sent')) {
+      fetchSentEmails();
     }
-  }
+  };
 
   const handleLoadMore = useCallback(() => {
     if (!isLoading && hasMore) {
-      fetchEmails()
+      fetchEmails();
     }
-  }, [isLoading, hasMore])
+  }, [isLoading, hasMore]);
 
   if (error) {
-    return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>
+    return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>;
   }
 
   return (
@@ -178,8 +177,8 @@ export default function EmailApp() {
       />
       <div className="flex flex-1 flex-col md:flex-row">
         <EmailList 
-          emails={filteredEmails.filter(email => email.folder === selectedFolder)} 
-          onSelectEmail={setSelectedEmail}
+          emails={filteredEmails.filter((email) => email.folder === selectedFolder)} 
+          onSelectEmail={setSelectedEmail as (email: Email) => void} // Explicit cast
           onSearch={handleSearch}
           onLoadMore={handleLoadMore}
           isLoading={isLoading}
@@ -204,6 +203,5 @@ export default function EmailApp() {
         )}
       </div>
     </div>
-  )
+  );
 }
-
