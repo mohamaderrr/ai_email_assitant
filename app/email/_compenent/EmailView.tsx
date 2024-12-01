@@ -41,7 +41,7 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
   const fetchSentiment = async (text: string) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/sentiment', {
+      const response = await fetch('/api/email/sentiment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
