@@ -90,7 +90,8 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
       setGeneratedEmails(prev => [...prev, generatedText])
       setCurrentEmailIndex(prev => prev + 1)
     } catch (error) {
-      if (error.name === 'AbortError') {
+      const err = error as Error
+      if (err.name === 'AbortError') {
         console.log('Email generation aborted')
       } else {
         console.error('Error generating email:', error)

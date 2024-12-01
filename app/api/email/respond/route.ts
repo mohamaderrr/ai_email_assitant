@@ -4,11 +4,10 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 
 //export const runtime = 'edge';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 
-export default prisma;
+
 
 
 
@@ -141,7 +140,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Error generating response:', error);
-    return NextResponse.json({ error: error.message || 'Failed to generate response' }, { status: 500 });
+    const err = error as Error; // Cast explicite
+    return NextResponse.json({ error: err.message || 'Failed to generate response' }, { status: 500 });
   }
 }
 
