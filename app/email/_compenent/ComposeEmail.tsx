@@ -38,7 +38,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
     if (replyTo) {
       setTo(replyTo.from)
       setSubject(`Re: ${replyTo.subject}`)
-      setBody(`\n\nOn ${replyTo.date}, ${replyTo.from} wrote:\n> ${replyTo.body.substring(0, 100)}...`)
+      setBody(`\n\nOn ${replyTo.date}, ${replyTo.from} wrote:\n> ${replyTo.body.substring(0, 1000)}`)
     }
   }, [replyTo])
 

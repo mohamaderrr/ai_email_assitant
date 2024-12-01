@@ -10,9 +10,9 @@ async function mockClientQuery(email: string) {
   // Simulating a delay
   await new Promise(resolve => setTimeout(resolve, 100));
   
-  if (email === 'test@example.com') {
+  if (email === 'mohamed er raouan <mohamader14@outlook.fr>') {
     return {
-      name: 'John Doe',
+      name: 'mohamed er raouan <mohamader14@outlook.fr',
       email: 'test@example.com',
       phoneNumber: '123-456-7890',
       city: 'New York',
