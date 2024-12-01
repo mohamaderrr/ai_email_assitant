@@ -47,14 +47,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
     setError('')
     try {
       const response = await axios.post('/api/email/send', { to, subject, body })
-      onSend({ 
-        id: response.data.messageId, 
-        from: 'mohameder1412@gmail.com', 
-        to, 
-        subject, 
-        body, 
-        date: new Date().toISOString() 
-      })
+      onSend({ id: response.data.messageId, from: 'mohameder1412@gmail.com', to, subject, body, date: new Date().toISOString() })
       setIsSending(false)
     } catch (error) {
       console.error('Error sending email:', error)
@@ -67,27 +60,26 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
     setIsGenerating(true)
     setError('')
     abortControllerRef.current = new AbortController()
-
     try {
       const response = await fetch('/api/email/respond', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selectedEmailBody: body, model: selectedModel }),
+        body: JSON.stringify({ 
+          selectedEmailBody: body, 
+          model: selectedModel, 
+          to: to.trim() // Ensure 'to' is trimmed to remove any leading/trailing whitespace
+        }),
         signal: abortControllerRef.current.signal,
       })
-
       if (!response.ok) {
         throw new Error('Failed to generate email')
       }
-
       const reader = response.body?.getReader()
       if (!reader) {
         throw new Error('Response body is null')
       }
-
       const decoder = new TextDecoder()
       let generatedText = ''
-
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -95,7 +87,6 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
         generatedText += chunk
         setBody(prevBody => prevBody + chunk)
       }
-
       setGeneratedEmails(prev => [...prev, generatedText])
       setCurrentEmailIndex(prev => prev + 1)
     } catch (error) {
@@ -176,8 +167,8 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
       {error && <p className="text-red-500 mt-2" role="alert">{error}</p>}
       <div className="flex justify-between items-center space-x-2 mt-4">
         <div className="flex items-center space-x-2">
-          <Button 
-            onClick={() => handleNavigateEmail('prev')} 
+          <Button
+            onClick={() => handleNavigateEmail('prev')}
             variant="outline"
             disabled={generatedEmails.length === 0}
             aria-label="Previous generated email"
@@ -187,8 +178,8 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
           <span aria-live="polite">
             {generatedEmails.length > 0 ? `${currentEmailIndex + 1}/${generatedEmails.length}` : '0/0'}
           </span>
-          <Button 
-            onClick={() => handleNavigateEmail('next')} 
+          <Button
+            onClick={() => handleNavigateEmail('next')}
             variant="outline"
             disabled={generatedEmails.length === 0}
             aria-label="Next generated email"
@@ -205,8 +196,8 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
             <Cpu className="mr-2 h-4 w-4" aria-hidden="true" />
             {selectedModel === 'gemini' ? 'Gemini' : 'Llama'}
           </Button>
-          <Button 
-            onClick={isGenerating ? handleCancelGeneration : handleGenerateEmail} 
+          <Button
+            onClick={isGenerating ? handleCancelGeneration : handleGenerateEmail}
             variant="outline"
             disabled={isSending}
             aria-label={isGenerating ? "Cancel email generation" : "Generate email content"}
@@ -223,8 +214,8 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
               </>
             )}
           </Button>
-          <Button 
-            onClick={handleSend} 
+          <Button
+            onClick={handleSend}
             disabled={isSending || isGenerating}
             aria-label="Send email"
           >
