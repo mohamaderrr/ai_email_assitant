@@ -3,27 +3,53 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 
-export const runtime = 'edge';
+//export const runtime = 'edge';
+import { PrismaClient } from '@prisma/client';
 
-// Mock function to simulate database query
-async function mockClientQuery(email: string) {
-  // Simulating a delay
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  if (email === 'mohamed er raouan <mohamader14@outlook.fr>') {
+const prisma = new PrismaClient();
+
+export default prisma;
+
+
+
+
+// Now you can use prisma as usual
+
+
+// Function to fetch client information based on email
+async function getClientInfo(email: string) {
+  try {
+    const client = await prisma.clients.findFirst({
+      where: {
+        email: email,
+      },
+      include: {
+        Documents: true,
+        Events: true,
+        Notes: true,
+        emails: true,
+      },
+    });
+
+    if (!client) {
+      return null;
+    }
+
     return {
-      name: 'mohamed er raouan <mohamader14@outlook.fr',
-      email: 'test@example.com',
-      phoneNumber: '123-456-7890',
-      city: 'New York',
-      country: 'USA',
-      status: 'Active',
-      Documents: [{ type: 'Invoice' }, { type: 'Contract' }],
-      Events: [{ name: 'Meeting' }, { name: 'Follow-up' }],
-      Notes: [{ description: 'Last contact: 2 weeks ago' }],
+      name: client.name,
+      email: client.email,
+      phoneNumber: client.phoneNumber,
+      city: client.city,
+      country: client.country,
+      status: client.status,
+      Documents: client.Documents.map((doc) => ({ type: doc.type })),
+      Events: client.Events.map((event) => ({ name: event.name })),
+      Notes: client.Notes.map((note) => ({ description: note.description })),
     };
+  } catch (error) {
+    console.error('Error fetching client info:', error);
+    throw new Error('Failed to fetch client information');
   }
-  return null;
 }
 
 export async function POST(req: NextRequest) {
@@ -52,8 +78,8 @@ export async function POST(req: NextRequest) {
     });
     console.log('Chat model created');
 
-    // Fetch mock client information
-    const client = await mockClientQuery(to);
+    // Fetch client information using Prisma
+    const client = await getClientInfo(to);
     console.log('Client info:', client);
 
     let clientInfo = '';
@@ -118,4 +144,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to generate response' }, { status: 500 });
   }
 }
+
 
