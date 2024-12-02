@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function AuthPage() {
@@ -16,44 +16,47 @@ export default function AuthPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, action: 'signin' | 'signup') => {
     event.preventDefault();
     setIsLoading(true);
-  
+
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-  
+
     try {
       const response = await fetch(`/api/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         if (action === 'signin') {
+          console.log('Sign-in successful, redirecting to /email');
           router.push('/email');
         } else {
           alert('Sign up successful! Please sign in.');
         }
       } else {
+        console.error(`Error during ${action}:`, data.error);
         alert(data.error || `Error during ${action}`);
       }
     } catch (error) {
+      console.error(`Error during ${action}:`, error);
       alert(`An error occurred during ${action}`);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="flex min-h-screen">
       <div className="hidden lg:block lg:w-1/2 relative">
         <Image
           src="/ai_email_image.jpeg"
           alt="Authentication"
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: "cover" }}
         />
       </div>
       <div className="w-full lg:w-1/2 p-8 flex items-center justify-center">
