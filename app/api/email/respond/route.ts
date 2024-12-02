@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-
+import { ChatOpenAI } from "@langchain/openai";
 //export const runtime = 'edge';
 import prisma from '@/lib/prisma';
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     if (!process.env.GOOGLE_API_KEY) {
       throw new Error('GOOGLE_API_KEY is not set');
     }
-
+    if(model=='gemini'){
     const chatModel = new ChatGoogleGenerativeAI({
       modelName: "gemini-pro",
       maxOutputTokens: 2048,
@@ -76,7 +76,17 @@ export async function POST(req: NextRequest) {
       streaming: true,
     });
     console.log('Chat model created');
-
+  }
+  if (model=="openai"){
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not set');
+    }
+      const chatModel = new ChatOpenAI({
+      modelName: model,
+      openAIApiKey: process.env.OPENAI_API_KEY,
+      streaming: true,
+    });
+  }
     // Fetch client information using Prisma
     const client = await getClientInfo(to);
     console.log('Client info:', client);

@@ -20,7 +20,7 @@ interface ComposeEmailProps {
   replyTo?: Email;
 }
 
-type Model = 'gemini' | 'llama';
+type Model = 'gemini' | 'openai';
 
 export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmailProps) {
   const [to, setTo] = useState('')
@@ -118,7 +118,7 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
   }
 
   const toggleModel = () => {
-    setSelectedModel(prev => prev === 'gemini' ? 'llama' : 'gemini')
+    setSelectedModel(prev => prev === 'gemini' ? 'openai' : 'gemini')
   }
 
   return (
