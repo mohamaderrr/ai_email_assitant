@@ -15,5 +15,20 @@ Follow these steps to set up the project locally:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-repo-name/ai-email-assistant.git
-   cd ai-email-assistant
+   git clone https://github.com/mohamaderrr/ai_email_assitant.git
+   cd ai_email_assitant
+2. **Install the Dependencies**
+     ```bash
+     npm install
+3. **Configure the Environment**
+   Create a .env file in the root directory and add the following variables:
+    ```bash
+    DATABASE_URL=your_database_url
+    GOOGLE_API_KEY=you_gemini_api
+    CLIENT_ID=your_client_id
+    CLIENT_SECRET=your_client_secret
+    REDIRECT_URL=https://developers.google.com/oauthplayground
+    REFRESH_TOKEN=your_refresh_token
+    OPENAI_API_KEY=your_openai_key
+    JWT_SECRET=your_jwt_secret
+    NEXT_PUBLIC_JWT_SECRET=your_NEXT_PUBLIC_JWT_SECRET
