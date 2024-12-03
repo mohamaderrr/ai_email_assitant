@@ -53,7 +53,7 @@ export default function AuthPage() {
     <div className="flex min-h-screen">
       <div className="hidden lg:block lg:w-1/2 relative">
         <Image
-          src="/ai_email_image.jpeg"
+          src="/test.jpg"
           alt="Authentication"
           fill
           style={{ objectFit: "cover" }}
