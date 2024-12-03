@@ -42,5 +42,17 @@ Follow these steps to set up the project locally:
     ```bash
     npm run dev
 Open your browser and navigate to http://localhost:3000.
+## Technology Choices Explanation
+Frontend
+Next.js: Chosen for its excellent performance, SEO capabilities, and server-side rendering.
+React Context API: Provides a clean and efficient way to manage state across the application.
+TypeScript: Enhances the reliability and scalability of the code with strong typing.
+Backend
+Prisma: A modern ORM that simplifies database operations and integrates seamlessly with TypeScript.
+MySQL: A relational database known for reliability and scalability, suitable for structured email data.
+APIs and Authentication
+Gmail API: Enables secure and robust email management.
+OAuth 2.0: Used for user authentication and authorization.
+## API Configuration Guide
 
  
