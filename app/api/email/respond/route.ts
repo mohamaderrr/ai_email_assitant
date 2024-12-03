@@ -3,53 +3,10 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOpenAI } from "@langchain/openai";
-//export const runtime = 'edge';
 import prisma from '@/lib/prisma';
+import { getClientInfo } from '@/lib/getClientInfo';
+
 let chatModel;
-
-
-
-
-
-
-// Now you can use prisma as usual
-
-
-// Function to fetch client information based on email
-async function getClientInfo(email: string) {
-  try {
-    const client = await prisma.clients.findFirst({
-      where: {
-        email: email,
-      },
-      include: {
-        Documents: true,
-        Events: true,
-        Notes: true,
-        emails: true,
-      },
-    });
-
-    if (!client) {
-      return null;
-    }
-
-    return {
-      name: client.name,
-      email: client.email,
-      phoneNumber: client.phoneNumber,
-      city: client.city,
-      country: client.country,
-      status: client.status,
-      Documents: client.Documents.map((doc) => ({ type: doc.type })),
-      Events: client.Events.map((event) => ({ name: event.name })),
-      Notes: client.Notes.map((note) => ({ description: note.description })),
-    };
-  } catch (error) {
-    console.error('Error fetching client info:', error);
-    throw new Error('Failed to fetch client information');
-  }
-}
 
 export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
@@ -61,36 +18,36 @@ export async function POST(req: NextRequest) {
       throw new Error('Missing required fields');
     }
 
-   
-
     if (!process.env.GOOGLE_API_KEY) {
       throw new Error('GOOGLE_API_KEY is not set');
     }
-    if(model==='gemini'){
-     chatModel = new ChatGoogleGenerativeAI({
-      modelName: "gemini-pro",
-      maxOutputTokens: 2048,
-      apiKey: process.env.GOOGLE_API_KEY,
-      streaming: true,
-    });
-    console.log('Chat model gemini created');
-  }
-  if (model==="openai"){
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set');
+    if(model === 'gemini'){
+      chatModel = new ChatGoogleGenerativeAI({
+        modelName: "gemini-pro",
+        maxOutputTokens: 2048,
+        apiKey: process.env.GOOGLE_API_KEY,
+        streaming: true,
+      });
+      console.log('Chat model gemini created');
     }
-      const chatModel = new ChatOpenAI({
-      modelName: model,
-      openAIApiKey: process.env.OPENAI_API_KEY,
-      streaming: true,
-    });
-    console.log('Chat model openai created');
-  }
+    if (model === "openai"){
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY is not set');
+      }
+      chatModel = new ChatOpenAI({
+        modelName: model,
+        openAIApiKey: process.env.OPENAI_API_KEY,
+        streaming: true,
+      });
+      console.log('Chat model openai created');
+    }
+
     // Fetch client information using Prisma
     const client = await getClientInfo(to);
     console.log('Client info:', client);
 
     let clientInfo = '';
+    let emailHistory = '';
     if (client) {
       clientInfo = `
         Client Information:
@@ -104,19 +61,34 @@ export async function POST(req: NextRequest) {
         Upcoming Events: ${client.Events.slice(0, 3).map(event => event.name).join(', ')}
         Recent Notes: ${client.Notes.slice(0, 3).map(note => note.description).join(', ')}
       `;
+      console.log("______client info client______", clientInfo)
+
+      emailHistory = client.emails.length > 0 ? client.emails.map(email => `
+        Date: ${email.receivedAt.toISOString()}
+        From: ${email.from}
+        To: ${email.to}
+        Subject: ${email.subject}
+        Body: ${email.body.substring(0, 100)}...
+      `).join('\n\n') : 'No recent email history available.';
+      console.log("________emailHistory_______", emailHistory)
     }
 
-    const prompt = PromptTemplate.fromTemplate(`
+    const promptTemplate = `
       You are an AI assistant helping to draft an email response. Use the following information to generate a professional and contextually appropriate response:
 
       Original Email Body: {selectedEmailBody}
 
-      ${client ? '{clientInfo}' : ''}
+      ${client ? 'Client Information:\n{clientInfo}' : ''}
+
+      ${client && client.emails.length > 0 ? 'Recent Email History:\n{emailHistory}' : ''}
 
       Please draft a response to this email. The response should be professional, empathetic, and tailored to the specific content of the original email. 
       ${client ? 'Use the client information provided to personalize the response and make relevant references to their recent activities or upcoming events if appropriate.' : ''}
-    `);
-    console.log('Prompt template:', prompt.template);
+      ${client && client.emails.length > 0 ? 'Consider the recent email history when crafting your response, ensuring continuity in the conversation.' : ''}
+    `;
+
+    const prompt = PromptTemplate.fromTemplate(promptTemplate);
+    console.log('Prompt template:', promptTemplate);
 
     const chain = prompt.pipe(chatModel).pipe(new StringOutputParser());
     console.log('Streaming response started');
@@ -124,6 +96,7 @@ export async function POST(req: NextRequest) {
     const stream = await chain.stream({
       selectedEmailBody: selectedEmailBody,
       clientInfo: clientInfo,
+      emailHistory: emailHistory,
     });
 
     return new Response(
@@ -149,9 +122,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Error generating response:', error);
-    const err = error as Error; // Cast explicite
+    const err = error as Error;
     return NextResponse.json({ error: err.message || 'Failed to generate response' }, { status: 500 });
   }
 }
-
 
