@@ -192,10 +192,10 @@ export default function ComposeEmail({ onSend, onCancel, replyTo }: ComposeEmail
           <Button
             onClick={toggleModel}
             variant="outline"
-            aria-label={`Switch to ${selectedModel === 'gemini' ? 'Llama' : 'Gemini'} model`}
+            aria-label={`Switch to ${selectedModel === 'gemini' ? 'openai' : 'Gemini'} model`}
           >
             <Cpu className="mr-2 h-4 w-4" aria-hidden="true" />
-            {selectedModel === 'gemini' ? 'Gemini' : 'Llama'}
+            {selectedModel === 'gemini' ? 'Gemini' : 'openai'}
           </Button>
           <Button
             onClick={isGenerating ? handleCancelGeneration : handleGenerateEmail}

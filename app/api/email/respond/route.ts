@@ -5,7 +5,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOpenAI } from "@langchain/openai";
 //export const runtime = 'edge';
 import prisma from '@/lib/prisma';
-
+let chatModel;
 
 
 
@@ -61,23 +61,21 @@ export async function POST(req: NextRequest) {
       throw new Error('Missing required fields');
     }
 
-    if (model !== 'gemini') {
-      throw new Error('Only Gemini model is supported in Edge runtime');
-    }
+   
 
     if (!process.env.GOOGLE_API_KEY) {
       throw new Error('GOOGLE_API_KEY is not set');
     }
-    if(model=='gemini'){
-    const chatModel = new ChatGoogleGenerativeAI({
+    if(model==='gemini'){
+     chatModel = new ChatGoogleGenerativeAI({
       modelName: "gemini-pro",
       maxOutputTokens: 2048,
       apiKey: process.env.GOOGLE_API_KEY,
       streaming: true,
     });
-    console.log('Chat model created');
+    console.log('Chat model gemini created');
   }
-  if (model=="openai"){
+  if (model==="openai"){
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not set');
     }
@@ -86,6 +84,7 @@ export async function POST(req: NextRequest) {
       openAIApiKey: process.env.OPENAI_API_KEY,
       streaming: true,
     });
+    console.log('Chat model openai created');
   }
     // Fetch client information using Prisma
     const client = await getClientInfo(to);
