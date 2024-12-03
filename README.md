@@ -54,5 +54,19 @@ APIs and Authentication
 Gmail API: Enables secure and robust email management.
 OAuth 2.0: Used for user authentication and authorization.
 ## API Configuration Guide
+GET /api/email/fetch: Fetches a list of emails
+POST /api/email/send: Sends an email
+   ```bash
+    {
+       "email": {
+    "to": "recipient@example.com",
+    "subject": "Your Subject",
+    "body": "Your Email Content"
+  }
+   }
+
+
+
+
 
  
