@@ -11,3 +11,9 @@ This repository hosts an AI-Powered Email Assistant, a web application designed 
 ---
 
 ## Setup Instructions
+Follow these steps to set up the project locally:
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/your-repo-name/ai-email-assistant.git
+   cd ai-email-assistant
