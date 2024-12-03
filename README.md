@@ -60,9 +60,9 @@ OAuth 2.0: Used for user authentication and authorization.
     GET /api/email/sent-emails: Retrieves a list of sent emails,
     POST /api/email/sentiment: Returns sentiment analysis for a given email.
 2. **Authentication Endpoints**
-   POST /api/auth/signin: Handles user login,
-   POST /api/auth/signup: Handles user registration,
-   POST /api/auth/verify-credentials: Verifies Gmail API credentials.
+   POST /api/signin: Handles user login,
+   POST /api/signup: Handles user registration,
+   POST /api/verify-credentials: Verifies Gmail API credentials.
 ## Architecture Overview
 The application follows a modular architecture with clearly defined separation of concerns:
 1 . **Frontend**
