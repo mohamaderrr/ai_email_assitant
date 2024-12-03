@@ -45,17 +45,23 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_JWT_SECRET}`, // Use NEXT_PUBLIC_ prefix for client-side env variables
         },
         body: JSON.stringify({ text }),
       })
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Invalid or missing token')
+        }
         throw new Error('Failed to fetch sentiment')
       }
+
       const data = await response.json()
       setSentiment(data.sentiment)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching sentiment:', error)
-      setError('Failed to analyze sentiment')
+      setError(error.message)
     } finally {
       setIsLoading(false)
     }
@@ -107,7 +113,7 @@ export default function EmailView({ selectedEmail, onReply, onReplyAll, onResend
             <Skeleton className="h-6 w-20" />
           ) : error ? (
             <Badge variant="outline" className="capitalize">
-              Error
+              {error}
             </Badge>
           ) : sentiment ? (
             <Badge variant={getSentimentVariant(sentiment)} className="capitalize">

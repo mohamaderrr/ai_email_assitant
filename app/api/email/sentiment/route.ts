@@ -3,12 +3,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Check if the API key is defined
 const apiKey = process.env.GOOGLE_API_KEY;
+const validToken = process.env.JWT_SECRET; // Token set in environment variables
 
-if (!apiKey) {
-  throw new Error('GOOGLE_API_KEY is not defined in the environment variables');
+if (!apiKey || !validToken) {
+  throw new Error('Environment variables GOOGLE_API_KEY or JWT_SECRET are not defined');
 }
 
-// Initialize the Google AI client with the API key as a string
+// Initialize the Google AI client with the API key
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function GET() {
@@ -17,6 +18,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check the Authorization header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized: Missing or invalid token' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (token !== validToken) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+    }
+
+    // Parse the request body
     const { text } = await request.json();
 
     if (!text) {
