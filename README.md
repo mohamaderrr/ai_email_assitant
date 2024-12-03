@@ -55,13 +55,13 @@ Gmail API: Enables secure and robust email management.
 OAuth 2.0: Used for user authentication and authorization.
 ## API Configuration Guide
 1. **Email Endpoints**
-    GET /api/email/fetch: Fetches a list of emails
-    POST /api/email/send: Sends an email
-    GET /api/email/sent-emails: Retrieves a list of sent emails. 
+    GET /api/email/fetch: Fetches a list of emails , 
+    POST /api/email/send: Sends an email ,
+    GET /api/email/sent-emails: Retrieves a list of sent emails,
     POST /api/email/sentiment: Returns sentiment analysis for a given email.
 2. **Authentication Endpoints**
-   POST /api/auth/signin: Handles user login.
-   POST /api/auth/signup: Handles user registration.
+   POST /api/auth/signin: Handles user login,
+   POST /api/auth/signup: Handles user registration,
    POST /api/auth/verify-credentials: Verifies Gmail API credentials.
 ## Architecture Overview
 The application follows a modular architecture with clearly defined separation of concerns:
