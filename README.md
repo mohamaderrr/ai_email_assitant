@@ -32,3 +32,15 @@ Follow these steps to set up the project locally:
     OPENAI_API_KEY=your_openai_key
     JWT_SECRET=your_jwt_secret
     NEXT_PUBLIC_JWT_SECRET=your_NEXT_PUBLIC_JWT_SECRET
+4. **Setup the Database**
+    Ensure you have MySQL installed and running. Then, initialize the Prisma schema:
+     ```bash
+     npx prisma generate
+     npx prisma migrate
+5. **Run the Application**
+    Start the development server:
+    ```bash
+    npm run dev
+Open your browser and navigate to http://localhost:3000.
+
+ 
