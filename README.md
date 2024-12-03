@@ -54,19 +54,30 @@ APIs and Authentication
 Gmail API: Enables secure and robust email management.
 OAuth 2.0: Used for user authentication and authorization.
 ## API Configuration Guide
-GET /api/email/fetch: Fetches a list of emails
-POST /api/email/send: Sends an email
-   ```bash
-    {
-       "email": {
-    "to": "recipient@example.com",
-    "subject": "Your Subject",
-    "body": "Your Email Content"
-  }
-   }
+1. **Email Endpoints**
+    GET /api/email/fetch: Fetches a list of emails
+    POST /api/email/send: Sends an email
+    GET /api/email/sent-emails: Retrieves a list of sent emails. 
+    POST /api/email/sentiment: Returns sentiment analysis for a given email.
+2. **Authentication Endpoints**
+   POST /api/auth/signin: Handles user login.
+   POST /api/auth/signup: Handles user registration.
+   POST /api/auth/verify-credentials: Verifies Gmail API credentials.
+## Architecture Overview
+The application follows a modular architecture with clearly defined separation of concerns:
+1 . **Frontend**
+  Built with Next.js to utilize its hybrid rendering features (SSR and SSG).
+  Uses React Context API for global state management, ensuring seamless interaction across components.
+2. **Backend**
+   Implements RESTful APIs using Next.js API routes.
+   Utilizes Prisma ORM to interact with the MySQL database, ensuring efficient and type-safe data operations.
+   Leverages Gmail API for handling email-related functionality.
+3. **Database**
+ MySQL schema managed by Prisma, storing user data, email metadata, and sentiment analysis results.
+4. **Authentication and Authorization**
+Powered by OAuth 2.0, integrating Google Authentication for secure and straightforward user management.
+
+   
 
 
-
-
-
- 
+    
