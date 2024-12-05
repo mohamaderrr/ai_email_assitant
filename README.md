@@ -36,7 +36,7 @@ Follow these steps to set up the project locally:
     Ensure you have MySQL installed and running. Then, initialize the Prisma schema:
      ```bash
      npx prisma generate
-     npx prisma migrate --dev first migration
+      npx prisma migrate dev --name migration
 5. **Run the Application**
     Start the development server:
     ```bash
