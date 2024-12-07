@@ -102,19 +102,21 @@ export const getTotalEmailCount = async (folder: string = 'INBOX') => {
   }
 };
 
-const getPageToken = async (page: number, limit: number, folder: string) => {
+const getPageToken = async (page: number, limit: number, folder: string): Promise<string | undefined> => {
   const gmail = await getGmailService();
   let currentPage = 1;
   let pageToken: string | undefined = undefined;
 
   while (currentPage < page) {
-    const { data } = await gmail.users.messages.list({
+    const response = await gmail.users.messages.list({
       userId: 'me',
       maxResults: limit,
       pageToken: pageToken,
       labelIds: [folder],
     });
-    pageToken = data.nextPageToken;
+
+    const data = response.data as gmail_v1.Schema$ListMessagesResponse;
+    pageToken = data.nextPageToken || undefined;
     currentPage++;
 
     if (!pageToken) break;
@@ -122,7 +124,6 @@ const getPageToken = async (page: number, limit: number, folder: string) => {
 
   return pageToken;
 };
-
 export const verifyCredentials = async () => {
   try {
     const { token } = await oAuth2Client.getAccessToken();
@@ -141,19 +142,22 @@ export const verifyCredentials = async () => {
 };
 
 export const getTransporter = async () => {
-  const accessToken = await oAuth2Client.getAccessToken();
+  const { token: accessToken } = await oAuth2Client.getAccessToken();
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       type: 'OAuth2',
       user: 'mohameder1412@gmail.com', // Replace with your Gmail address
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       refreshToken: process.env.REFRESH_TOKEN,
-      accessToken: accessToken.token,
+      accessToken: accessToken,
     },
-  });
+  } as nodemailer.TransportOptions);
 };
+
 
 export const createConfig = (url: string, token: string) => ({
   method: 'get',
