@@ -3,10 +3,16 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOpenAI } from "@langchain/openai";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import prisma from '@/lib/prisma';
 import { getClientInfo } from '@/lib/getClientInfo';
+// Set environment variables
+process.env["LANGSMITH_TRACING"] = "true";
+process.env["LANGCHAIN_PROJECT"] = "ai_email_test";
+process.env["LANGCHAIN_API_KEY"] = process.env.LANGCHAIN_API_KEY;
 
-let chatModel;
+// Define the type for the chat model
+let chatModel: BaseChatModel;
 
 export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
@@ -18,10 +24,11 @@ export async function POST(req: NextRequest) {
       throw new Error('Missing required fields');
     }
 
-    if (!process.env.GOOGLE_API_KEY) {
-      throw new Error('GOOGLE_API_KEY is not set');
-    }
-    if(model === 'gemini'){
+    // Initialize the chat model based on the selected model
+    if (model === 'gemini') {
+      if (!process.env.GOOGLE_API_KEY) {
+        throw new Error('GOOGLE_API_KEY is not set');
+      }
       chatModel = new ChatGoogleGenerativeAI({
         modelName: "gemini-pro",
         maxOutputTokens: 2048,
@@ -29,17 +36,18 @@ export async function POST(req: NextRequest) {
         streaming: true,
       });
       console.log('Chat model gemini created');
-    }
-    if (model === "openai"){
+    } else if (model === "openai") {
       if (!process.env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY is not set');
       }
       chatModel = new ChatOpenAI({
-        modelName: model,
+        modelName: "gpt-3.5-turbo",
         openAIApiKey: process.env.OPENAI_API_KEY,
         streaming: true,
       });
       console.log('Chat model openai created');
+    } else {
+      throw new Error('Invalid model specified');
     }
 
     // Fetch client information using Prisma
@@ -61,7 +69,7 @@ export async function POST(req: NextRequest) {
         Upcoming Events: ${client.Events.slice(0, 3).map(event => event.name).join(', ')}
         Recent Notes: ${client.Notes.slice(0, 3).map(note => note.description).join(', ')}
       `;
-      console.log("______client info client______", clientInfo)
+      console.log("Client info:", clientInfo);
 
       emailHistory = client.emails.length > 0 ? client.emails.map(email => `
         Date: ${email.receivedAt.toISOString()}
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest) {
         Subject: ${email.subject}
         Body: ${email.body.substring(0, 100)}...
       `).join('\n\n') : 'No recent email history available.';
-      console.log("________emailHistory_______", emailHistory)
+      console.log("Email history:", emailHistory);
     }
 
     const promptTemplate = `
