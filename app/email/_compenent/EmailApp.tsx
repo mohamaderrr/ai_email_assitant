@@ -6,17 +6,9 @@ import Sidebar from './Sidebar';
 import EmailList from './EmailList';
 import EmailView from './EmailView';
 import ComposeEmail from './ComposeEmail';
+import { Email } from '@/lib/types';
 
-interface Email {
-  id: string;
-  from: string;
-  to: string;
-  subject: string;
-  preview: string;
-  date: string;
-  body: string;
-  folder: string;
-}
+
 
 export default function EmailApp() {
   const [selectedFolder, setSelectedFolder] = useState('inbox');
@@ -178,7 +170,7 @@ export default function EmailApp() {
       <div className="flex flex-1 flex-col md:flex-row">
         <EmailList 
           emails={filteredEmails.filter((email) => email.folder === selectedFolder)} 
-          onSelectEmail={setSelectedEmail as (email: Email) => void} // Explicit cast
+          onSelectEmail={setSelectedEmail} // Explicit cast
           onSearch={handleSearch}
           onLoadMore={handleLoadMore}
           isLoading={isLoading}

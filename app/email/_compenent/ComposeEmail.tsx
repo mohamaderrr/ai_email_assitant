@@ -4,15 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Send, X, Wand2, ChevronLeft, ChevronRight, Cpu } from 'lucide-react'
 import axios from 'axios'
+import { Email } from '@/lib/types';
 
-interface Email {
-  id: string;
-  from: string;
-  to: string;
-  subject: string;
-  body: string;
-  date: string;
-}
 
 interface ComposeEmailProps {
   onSend: (email: Email) => void;

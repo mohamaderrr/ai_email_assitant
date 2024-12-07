@@ -1,23 +1,17 @@
 import { useRef, useCallback } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import SearchBar from './SearchBar'
-
-interface Email {
-  id: string
-  from: string
-  subject: string
-  preview: string
-  date: string
-}
+import { Email } from '@/lib/types';
 
 interface EmailListProps {
-  emails: Email[]
-  onSelectEmail: (email: Email) => void
-  onSearch: (query: string) => void
-  onLoadMore: () => void
-  isLoading: boolean
-  hasMore: boolean
+  emails: Email[];
+  onSelectEmail: (email: Email) => void; // Single unified Email type
+  onSearch: (searchTerm: string) => void;
+  onLoadMore: () => void;
+  isLoading: boolean;
+  hasMore: boolean;
 }
+
 
 export default function EmailList({ 
   emails, 

@@ -7,14 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Reply, Users, Send, Sun, Moon } from 'lucide-react'
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface Email {
-  id: string
-  subject: string
-  from: string
-  to: string
-  date: string
-  body: string
-}
+import { Email } from '@/lib/types';
 
 interface EmailViewProps {
   selectedEmail: Email | null
