@@ -6,11 +6,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import prisma from '@/lib/prisma';
 import { getClientInfo } from '@/lib/getClientInfo';
-// Set environment variables
-process.env["LANGSMITH_TRACING"] = "true";
-process.env["LANGCHAIN_PROJECT"] = "ai_email_test";
-process.env["LANGCHAIN_API_KEY"] = process.env.LANGCHAIN_API_KEY;
-
 // Define the type for the chat model
 let chatModel: BaseChatModel;
 
