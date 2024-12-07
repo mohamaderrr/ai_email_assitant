@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { ReactNode } from 'react';
 
-function layout({children}) {
+interface LayoutProps {
+  children: ReactNode; // Type for the children prop
+}
+
+function layout({ children }: LayoutProps) {
   return (
     <div>
       {children}
     </div>
-  )
+  );
 }
 
-export default layout
+export default layout;

@@ -35,7 +35,7 @@ export default function Home() {
         {/* Buttons */}
         <div className="flex justify-center space-x-4">
           <Button 
-            variant="primary" 
+            variant="default" 
             className="px-6 py-2" 
             onClick={handleGetStarted}
           >

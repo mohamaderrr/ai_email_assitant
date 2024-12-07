@@ -15,6 +15,7 @@ interface EmailViewProps {
   onReplyAll: (email: Email) => void
   onResend: (email: Email) => void
   onToggleTheme: () => void
+  onDelete: (emailToDelete: Email) => void;
   isDarkMode: boolean
 }
 

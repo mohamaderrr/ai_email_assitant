@@ -1,6 +1,5 @@
-import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
-
+import { google, gmail_v1 } from 'googleapis';
 const oAuth2Client = new google.auth.OAuth2(
   process.env.CLIENT_ID,
   process.env.CLIENT_SECRET,
@@ -45,35 +44,42 @@ export const getEmails = async (page: number = 1, limit: number = 20, folder: st
     // Fetch detailed data for each message
     const emailDetails = await Promise.all(
       data.messages.map(async (message) => {
-        const { data: messageData } = await gmail.users.messages.get({
-          userId: 'me',
-          id: message.id,
-        });
+        try {
+          const response = await gmail.users.messages.get({
+            userId: 'me',
+            id: message.id!,
+          });
 
-        const headers = messageData.payload?.headers || [];
-        const from = headers.find((header) => header.name === 'From')?.value || 'Unknown';
-        const subject = headers.find((header) => header.name === 'Subject')?.value || 'No Subject';
-        const date = headers.find((header) => header.name === 'Date')?.value || 'Unknown Date';
-        const body =
-          messageData.payload?.parts
-            ?.find((part) => part.mimeType === 'text/plain')
-            ?.body?.data || '';
+          const messageData = response.data;
+          const headers = messageData.payload?.headers || [];
+          const from = headers.find((header) => header.name === 'From')?.value || 'Unknown';
+          const subject = headers.find((header) => header.name === 'Subject')?.value || 'No Subject';
+          const date = headers.find((header) => header.name === 'Date')?.value || 'Unknown Date';
+          const body =
+            messageData.payload?.parts
+              ?.find((part) => part.mimeType === 'text/plain')
+              ?.body?.data || '';
 
-        // Decode the body if it's base64 encoded
-        const decodedBody = body
-          ? Buffer.from(body, 'base64').toString('utf-8')
-          : 'No Body';
+          // Decode the body if it's base64 encoded
+          const decodedBody = body
+            ? Buffer.from(body, 'base64').toString('utf-8')
+            : 'No Body';
 
-        return {
-          id: message.id,
-          from,
-          to: 'me', // Assuming "me" as the recipient
-          date,
-          subject,
-          body: decodedBody,
-        };
+          return {
+            id: message.id,
+            from,
+            to: 'me', // Assuming "me" as the recipient
+            date,
+            subject,
+            body: decodedBody,
+          };
+        } catch (error) {
+          console.error(`Error fetching message ${message.id}:`, error);
+          return null;
+        }
       })
     );
+
 
     return { emails: emailDetails, nextPageToken: data.nextPageToken || null };
   } catch (error: any) {

@@ -180,7 +180,7 @@ export default function EmailApp() {
           <ComposeEmail 
             onSend={handleSendEmail} 
             onCancel={() => setIsComposing(false)}
-            replyTo={selectedEmail}
+            replyTo={selectedEmail ?? undefined}
           />
         ) : (
           <EmailView 
